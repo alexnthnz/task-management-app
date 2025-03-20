@@ -14,9 +14,32 @@ env:
   STAGE: prod
 
 jobs:
+  infrastructure:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.0
+      - name: Terraform Init
+        working-directory: ./environments/prod
+        run: terraform init
+      - name: Terraform Apply (Infrastructure)
+        working-directory: ./environments/prod
+        run: terraform apply -auto-approve -target=module.dynamodb -target=module.backend_artifacts -target=module.frontend_artifacts
+        if: github.event_name == 'push'
+
   backend:
     runs-on: ubuntu-latest
-
+    needs: infrastructure
     steps:
       # Checkout code
       - name: Checkout repository
@@ -69,12 +92,12 @@ jobs:
 
       - name: Terraform Plan (Backend)
         working-directory: ./environments/prod
-        run: terraform plan -out=tfplan-backend -target=module.dynamodb -target=module.backend_artifacts -target=module.backend
+        run: terraform plan -out=tfplan-backend -target=module.backend
         if: github.event_name == 'pull_request'
 
       - name: Terraform Apply (Backend)
         working-directory: ./environments/prod
-        run: terraform apply -auto-approve -target=module.dynamodb -target=module.backend_artifacts -target=module.backend
+        run: terraform apply -auto-approve -target=module.backend
         if: github.event_name == 'push'
 
     outputs:

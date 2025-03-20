@@ -27,7 +27,7 @@ module "backend" {
   lambda_zip_key             = var.lambda_zip_key
   dynamodb_table_arn         = module.dynamodb.table_arn
   aws_region                 = var.aws_region
-  cors_origin                = "" 
+  cors_origin                = "*" 
 }
 
 # module "frontend" {
