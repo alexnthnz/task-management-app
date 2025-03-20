@@ -87,16 +87,16 @@ jobs:
           terraform_version: 1.5.0
 
       - name: Terraform Init (Backend)
-        working-directory: ./environments/prod
+        working-directory: ./infrastructure/environments/prod
         run: terraform init
 
       - name: Terraform Plan (Backend)
-        working-directory: ./environments/prod
+        working-directory: ./infrastructure/environments/prod
         run: terraform plan -out=tfplan-backend -target=module.backend
         if: github.event_name == 'pull_request'
 
       - name: Terraform Apply (Backend)
-        working-directory: ./environments/prod
+        working-directory: ./infrastructure/environments/prod
         run: terraform apply -auto-approve -target=module.backend
         if: github.event_name == 'push'
 
