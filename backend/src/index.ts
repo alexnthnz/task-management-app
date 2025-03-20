@@ -7,7 +7,7 @@ import { logger } from './utils/logger';
 import { errorHandler } from './middleware/errorHandler';
 import taskRoutes from './routes/taskRoutes';
 import { dynamodb } from './config/dynamodb';
-import { ListTablesCommand } from '@aws-sdk/client-dynamodb';
+import { DescribeTableCommand } from '@aws-sdk/client-dynamodb';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './config/swagger';
 
@@ -31,19 +31,13 @@ app.use('/api/tasks', taskRoutes);
 // Health check endpoint
 app.get('/health', async (_req: Request, res: Response) => {
   try {
-    // Check DynamoDB connection
-    const command = new ListTablesCommand({});
-    await dynamodb.send(command);
-    
-    res.status(200).json({ 
-      status: 'ok',
-      dynamodb: 'connected'
-    });
+    await dynamodb.send(new DescribeTableCommand({ TableName: process.env.DYNAMODB_TABLE }));
+    res.json({ status: 'ok', dynamodb: 'connected', environment: process.env.NODE_ENV });
   } catch (error) {
-    res.status(500).json({ 
+    res.status(500).json({
       status: 'error',
       dynamodb: 'disconnected',
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });
