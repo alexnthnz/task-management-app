@@ -60,15 +60,22 @@ resource "aws_lambda_function" "express_app" {
   runtime       = "nodejs18.x"
   timeout       = 15
 
+  # Add source_code_hash to detect S3 object changes
+  source_code_hash = data.aws_s3_object.lambda_zip.etag
+
   environment {
     variables = {
-      NODE_ENV       = "production"              # Required for production mode
-      DYNAMODB_TABLE = "${var.app_name}-tasks-${var.stage}"  # e.g., task-management-tasks-prod
-      AWS_REGION     = var.aws_region            # e.g., ap-southeast-2
-      LOG_LEVEL      = "info"                    # Adjust as needed
-      CORS_ORIGIN    = var.cors_origin           # e.g., CloudFront URL, set dynamically
+      NODE_ENV       = "production"
+      DYNAMODB_TABLE = "${var.app_name}-tasks-${var.stage}"  
+      LOG_LEVEL      = "info"                    
+      CORS_ORIGIN    = var.cors_origin           
     }
   }
+}
+
+data "aws_s3_object" "lambda_zip" {
+  bucket = var.backend_artifacts_bucket_name
+  key    = var.lambda_zip_key
 }
 
 resource "aws_api_gateway_rest_api" "api" {
@@ -91,14 +98,35 @@ resource "aws_api_gateway_method" "proxy" {
 resource "aws_api_gateway_integration" "lambda" {
   rest_api_id = aws_api_gateway_rest_api.api.id
   resource_id = aws_api_gateway_resource.proxy.id
-  http_method = aws_api_gateway_method.proxy.http_method
+  http_method             = aws_api_gateway_method.proxy.http_method
+  integration_http_method = "POST"
   type        = "AWS_PROXY"
   uri         = aws_lambda_function.express_app.invoke_arn
+
+  depends_on = [aws_api_gateway_method.proxy]
 }
 
 resource "aws_api_gateway_deployment" "deployment" {
-  depends_on  = [aws_api_gateway_integration.lambda]
   rest_api_id = aws_api_gateway_rest_api.api.id
+  # Ensure deployment happens after integration
+  depends_on = [aws_api_gateway_integration.lambda]
+
+  # Force redeployment on changes to resources, methods, or integrations
+  triggers = {
+    redeployment = sha1(jsonencode([
+      aws_api_gateway_resource.proxy.id,
+      aws_api_gateway_method.proxy.id,
+      aws_api_gateway_integration.lambda.id,
+    ]))
+  }
+}
+
+resource "aws_api_gateway_stage" "prod" {
+  rest_api_id   = aws_api_gateway_rest_api.api.id
+  stage_name    = var.stage
+  deployment_id = aws_api_gateway_deployment.deployment.id
+
+  depends_on = [aws_api_gateway_deployment.deployment]
 }
 
 resource "aws_lambda_permission" "apigw" {

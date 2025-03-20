@@ -28,3 +28,18 @@ variable "aws_region" {
   type        = string
   default     = "ap-southeast-2"
 }
+
+variable "frontend_artifacts_bucket_name" {
+  description = "Frontend artifacts bucket name"
+  type        = string
+}
+
+variable "backend_artifacts_bucket_name" {
+  description = "Backend artifacts bucket name"
+  type        = string
+}
+
+variable "dynamodb_table_arn" {
+  description = "DynamoDB table ARN"
+  type        = string
+}
