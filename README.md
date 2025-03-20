@@ -216,6 +216,7 @@ The application uses Terraform to provision the following AWS resources:
    - Command out the frontend section in `main.tf` and `outputs.tf`. Use Terraform plan and apply to deploy the backend resources.
    - After backend deployment
      - Update the `PROD_API_URL` in Github Secrets with the API Gateway URL from the Terraform output.
+     - Trigger Github Actions pipeline to deploy the frontend artifacts to S3 bucket
      - Uncomment the frontend section in `main.tf` and `outputs.tf`. Use Terraform plan and apply to deploy the frontend resources.
 
    ```bash
