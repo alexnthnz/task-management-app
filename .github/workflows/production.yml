@@ -36,15 +36,14 @@ jobs:
         run: terraform init
       - name: Terraform Apply (Infrastructure)
         working-directory: ./infrastructure/environments/prod
-        run: terraform apply -auto-approve \ 
-          -var "app_name=${{ env.APP_NAME }}" \
-          -var "stage=${{ env.STAGE }}" \
-          -var "aws_region=${{ env.AWS_REGION }}" \
-          -var "read_capacity=${{ env.READ_CAPACITY }}" \
-          -var "write_capacity=${{ env.WRITE_CAPACITY }}" \
-          -target=module.dynamodb \ 
-          -target=module.backend_artifacts \ 
-          -target=module.frontend_artifacts
+        run: |
+          terraform apply -auto-approve \
+            -var "app_name=${{ env.APP_NAME }}" \
+            -var "stage=${{ env.STAGE }}" \
+            -var "aws_region=${{ env.AWS_REGION }}" \
+            -var "read_capacity=${{ env.READ_CAPACITY }}" \
+            -var "write_capacity=${{ env.WRITE_CAPACITY }}" \
+            -target=module.dynamodb -target=module.backend_artifacts -target=module.frontend_artifacts
         if: github.event_name == 'push'
 
   backend:
