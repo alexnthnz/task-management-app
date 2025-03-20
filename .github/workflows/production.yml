@@ -110,7 +110,7 @@ jobs:
 
       - name: Build Frontend
         working-directory: ./frontend
-        run: npm run build && npm run export # Assumes Next.js export
+        run: npm run build
 
       - name: Upload Frontend to S3
         run: |
