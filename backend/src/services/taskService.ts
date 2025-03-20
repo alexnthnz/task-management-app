@@ -109,41 +109,4 @@ export class TaskService {
 
     await dynamodb.send(command);
   }
-
-  async migrateDoneToCompleted(): Promise<void> {
-    const command = new ScanCommand({
-      TableName: TABLE_NAME,
-      FilterExpression: '#status = :status',
-      ExpressionAttributeNames: {
-        '#status': 'status',
-      },
-      ExpressionAttributeValues: {
-        ':status': 'DONE',
-      },
-    });
-
-    const result = await dynamodb.send(command);
-    if (!result.Items) return;
-
-    for (const item of result.Items) {
-      const updateCommand = new UpdateCommand({
-        TableName: TABLE_NAME,
-        Key: {
-          id: item.id,
-          status: 'DONE',
-        },
-        UpdateExpression: 'set #status = :status, #updatedAt = :updatedAt',
-        ExpressionAttributeNames: {
-          '#status': 'status',
-          '#updatedAt': 'updatedAt',
-        },
-        ExpressionAttributeValues: {
-          ':status': 'COMPLETED',
-          ':updatedAt': new Date().toISOString(),
-        },
-      });
-
-      await dynamodb.send(updateCommand);
-    }
-  }
 }
