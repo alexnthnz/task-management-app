@@ -28,12 +28,12 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
-          terraform_version: 1.5.0
+          terraform_version: latest
       - name: Terraform Init
-        working-directory: ./environments/prod
+        working-directory: ./infrastructure/environments/prod
         run: terraform init
       - name: Terraform Apply (Infrastructure)
-        working-directory: ./environments/prod
+        working-directory: ./infrastructure/environments/prod
         run: terraform apply -auto-approve -target=module.dynamodb -target=module.backend_artifacts -target=module.frontend_artifacts
         if: github.event_name == 'push'
 
