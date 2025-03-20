@@ -14,6 +14,7 @@ env:
   STAGE: prod
   READ_CAPACITY: 5
   WRITE_CAPACITY: 5
+  LAMBDA_ZIP_KEY: lambda-deployment.zip
 
 jobs:
   infrastructure:
@@ -43,6 +44,7 @@ jobs:
             -var "aws_region=${{ env.AWS_REGION }}" \
             -var "read_capacity=${{ env.READ_CAPACITY }}" \
             -var "write_capacity=${{ env.WRITE_CAPACITY }}" \
+            -var "lambda_zip_key=${{ env.LAMBDA_ZIP_KEY }}" \
             -target=module.dynamodb -target=module.backend_artifacts -target=module.frontend_artifacts
         if: github.event_name == 'push'
 
