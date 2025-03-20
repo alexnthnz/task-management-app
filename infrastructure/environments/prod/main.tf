@@ -1,23 +1,3 @@
-module "dynamodb" {
-  source        = "../../modules/dynamodb"
-  app_name      = var.app_name
-  stage         = var.stage
-  read_capacity = var.read_capacity
-  write_capacity = var.write_capacity
-}
-
-module "backend_artifacts" {
-  source   = "../../modules/backend-artifacts"
-  app_name = var.app_name
-  stage    = var.stage
-}
-
-module "frontend_artifacts" {
-  source   = "../../modules/frontend-artifacts"
-  app_name = var.app_name
-  stage    = var.stage
-}
-
 module "backend" {
   source                     = "../../modules/backend"
   app_name                   = var.app_name
@@ -30,9 +10,9 @@ module "backend" {
   cors_origin                = "*" 
 }
 
-# module "frontend" {
-#   source                      = "../../modules/frontend"
-#   app_name                    = var.app_name
-#   stage                       = var.stage
-#   frontend_artifacts_bucket_name = module.frontend_artifacts.bucket_name
-# }
+module "frontend" {
+  source                      = "../../modules/frontend"
+  app_name                    = var.app_name
+  stage                       = var.stage
+  frontend_artifacts_bucket_name = module.frontend_artifacts.bucket_name
+}
