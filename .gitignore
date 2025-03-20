@@ -134,3 +134,7 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+
+infrastructure/environments/*/.terraform/*
+infrastructure/environments/*/.terraform.lock.hcl
+infrastructure/environments/*/secret.tfvars

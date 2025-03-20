@@ -1,0 +1,106 @@
+name: Production 
+
+on:
+  push:
+    branches:
+      - main # Trigger on push to main branch
+  pull_request:
+    branches:
+      - main # Optional: Run on PRs for validation
+
+env:
+  AWS_REGION: ap-southeast-2 # Match your provider.tf default
+  APP_NAME: task-management
+  STAGE: prod
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout code
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18' # Match Lambda runtime
+
+      # Configure AWS Credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # Backend: Install, Build, and Upload
+      - name: Install Backend Dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Build Backend
+        working-directory: ./backend
+        run: npm run build
+
+      - name: Package Backend
+        working-directory: ./backend
+        run: npm run package # Assumes this creates lambda-deployment.zip
+
+      - name: Upload Backend ZIP to S3
+        run: |
+          aws s3 cp ./backend/lambda-deployment.zip s3://${{ env.APP_NAME }}-backend-artifacts-${{ env.STAGE }}/lambda-deployment.zip
+
+      # Frontend: Install, Build, and Upload
+      - name: Install Frontend Dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Build Frontend
+        working-directory: ./frontend
+        run: npm run build && npm run export
+
+      - name: Upload Frontend to S3
+        run: |
+          aws s3 sync ./frontend/out/ s3://${{ env.APP_NAME }}-frontend-artifacts-${{ env.STAGE }}/ --delete
+
+      # # Setup Terraform
+      # - name: Setup Terraform
+      #   uses: hashicorp/setup-terraform@v3
+      #   with:
+      #     terraform_version: 1.5.0 # Adjust to your preferred version
+      #
+      # # Terraform: Init and Apply
+      # - name: Terraform Init
+      #   working-directory: ./environments/dev
+      #   run: terraform init
+      #
+      # - name: Terraform Plan
+      #   working-directory: ./environments/dev
+      #   run: terraform plan -out=tfplan
+      #   if: github.event_name == 'pull_request' # Only plan on PRs
+      #
+      # - name: Terraform Apply
+      #   working-directory: ./environments/prod
+      #   run: terraform apply -auto-approve
+      #   if: github.event_name == 'push' # Apply only on push to main
+      #
+      # # Invalidate CloudFront Cache (after apply to get distribution ID)
+      # - name: Get CloudFront Distribution ID
+      #   working-directory: ./environments/dev
+      #   id: cloudfront
+      #   run: |
+      #     DISTRIBUTION_ID=$(terraform output -raw cloudfront_distribution_id)
+      #     echo "DISTRIBUTION_ID=$DISTRIBUTION_ID" >> $GITHUB_ENV
+      #   if: github.event_name == 'push'
+      #
+      # - name: Invalidate CloudFront Cache
+      #   run: |
+      #     aws cloudfront create-invalidation --distribution-id ${{ env.DISTRIBUTION_ID }} --paths "/*"
+      #   if: github.event_name == 'push'
+
+    # outputs:
+    #   api_url: ${{ steps.terraform.outputs.api_url }}
+    #   cloudfront_url: ${{ steps.terraform.outputs.cloudfront_url }}
