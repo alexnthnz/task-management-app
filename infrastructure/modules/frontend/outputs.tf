@@ -9,6 +9,6 @@ output "cloudfront_distribution_id" {
 }
 
 output "s3_bucket_name" {
-  value       = aws_s3_bucket.frontend_artifacts.bucket
+  value       = var.frontend_artifacts_bucket_name
   description = "The name of the S3 bucket for frontend artifacts"
 }

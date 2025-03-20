@@ -10,9 +10,9 @@ module "backend" {
   cors_origin                = "*" 
 }
 
-# module "frontend" {
-#   source                      = "../../modules/frontend"
-#   app_name                    = var.app_name
-#   stage                       = var.stage
-#   frontend_artifacts_bucket_name = var.frontend_artifacts_bucket_name
-# }
+module "frontend" {
+  source                      = "../../modules/frontend"
+  app_name                    = var.app_name
+  stage                       = var.stage
+  frontend_artifacts_bucket_name = var.frontend_artifacts_bucket_name
+}

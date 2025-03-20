@@ -86,10 +86,14 @@ jobs:
       # Frontend: Install, Build, and Upload
       - name: Install Frontend Dependencies
         working-directory: ./frontend
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.PROD_API_URL }}
         run: npm ci
 
       - name: Build Frontend
         working-directory: ./frontend
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.PROD_API_URL }}
         run: npm run build
 
       - name: Upload Frontend to S3
