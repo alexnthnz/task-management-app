@@ -34,7 +34,9 @@ resource "aws_iam_role_policy" "dynamodb_access" {
           "dynamodb:Scan",
           "dynamodb:Query",
           "dynamodb:ListTables",
-          "dynamodb:DescribeTable"
+          "dynamodb:DescribeTable",
+          "dynamodb:UpdateItem"
+
         ]
         Resource = var.dynamodb_table_arn
       },

@@ -1,4 +1,10 @@
-import { ScanCommand, GetCommand, PutCommand, UpdateCommand, DeleteCommand } from '@aws-sdk/lib-dynamodb';
+import {
+  ScanCommand,
+  GetCommand,
+  PutCommand,
+  UpdateCommand,
+  DeleteCommand,
+} from '@aws-sdk/lib-dynamodb';
 import { dynamodb, TABLE_NAME } from '../config/dynamodb';
 import { Task, CreateTaskInput, UpdateTaskInput } from '../types/task';
 import { NotFoundError } from '../utils/errors';
@@ -27,11 +33,11 @@ export class TaskService {
 
       const result = await dynamodb.send(command);
       if (result.Items) {
-        allItems.push(...result.Items as Task[]);
+        allItems.push(...(result.Items as Task[]));
       }
       lastEvaluatedKey = result.LastEvaluatedKey;
     } while (lastEvaluatedKey);
-    
+
     return allItems;
   }
 
@@ -109,11 +115,11 @@ export class TaskService {
       TableName: TABLE_NAME,
       FilterExpression: '#status = :status',
       ExpressionAttributeNames: {
-        '#status': 'status'
+        '#status': 'status',
       },
       ExpressionAttributeValues: {
-        ':status': 'DONE'
-      }
+        ':status': 'DONE',
+      },
     });
 
     const result = await dynamodb.send(command);
@@ -124,17 +130,17 @@ export class TaskService {
         TableName: TABLE_NAME,
         Key: {
           id: item.id,
-          status: 'DONE'
+          status: 'DONE',
         },
         UpdateExpression: 'set #status = :status, #updatedAt = :updatedAt',
         ExpressionAttributeNames: {
           '#status': 'status',
-          '#updatedAt': 'updatedAt'
+          '#updatedAt': 'updatedAt',
         },
         ExpressionAttributeValues: {
           ':status': 'COMPLETED',
-          ':updatedAt': new Date().toISOString()
-        }
+          ':updatedAt': new Date().toISOString(),
+        },
       });
 
       await dynamodb.send(updateCommand);

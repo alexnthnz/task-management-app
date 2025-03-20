@@ -9,6 +9,7 @@
     "build": "tsc",
     "test": "jest",
     "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
     "format": "prettier --write \"src/**/*.ts\"",
     "package": "npm ci && npm run build && rm -rf dist/node_modules && cp -r node_modules dist/ && cd dist && zip -r ../lambda-deployment.zip . && cd .."
   },

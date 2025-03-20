@@ -1,20 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import { Task, TaskStatus } from '../types/task';
-import { taskService } from '../services/taskService';
-import toast from 'react-hot-toast';
+import React, { useState, useEffect } from "react";
+import { Task, TaskStatus } from "../types/task";
+import { taskService } from "../services/taskService";
+import toast from "react-hot-toast";
 
 interface EditTaskModalProps {
   isOpen: boolean;
   onClose: () => void;
-  task: Task | null;
+  taskId: string;
   onTaskUpdated: () => void;
 }
 
-export default function EditTaskModal({ isOpen, onClose, task, onTaskUpdated }: EditTaskModalProps) {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [status, setStatus] = useState<TaskStatus>('TODO');
+export default function EditTaskModal({
+  isOpen,
+  onClose,
+  taskId,
+  onTaskUpdated,
+}: EditTaskModalProps) {
+  const [task, setTask] = useState<Task | null>(null);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [status, setStatus] = useState<TaskStatus>("TODO");
   const [isPreview, setIsPreview] = useState(true);
+
+  useEffect(() => {
+    const fetchTask = async () => {
+      try {
+        const task = await taskService.getTaskById(taskId);
+        setTask(task);
+      } catch (err) {
+        toast.error(
+          err instanceof Error ? err.message : "Failed to fetch task",
+        );
+      }
+    };
+
+    if (isOpen) {
+      fetchTask();
+    }
+  }, [isOpen, taskId]);
 
   useEffect(() => {
     if (task) {
@@ -34,11 +57,11 @@ export default function EditTaskModal({ isOpen, onClose, task, onTaskUpdated }: 
         description,
         status,
       });
-      toast.success('Task updated successfully');
+      toast.success("Task updated successfully");
       onTaskUpdated();
       onClose();
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Failed to update task');
+      toast.error(err instanceof Error ? err.message : "Failed to update task");
     }
   };
 
@@ -53,8 +76,18 @@ export default function EditTaskModal({ isOpen, onClose, task, onTaskUpdated }: 
             onClick={onClose}
             className="text-gray-400 hover:text-gray-500 transition-colors duration-200"
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
         </div>
@@ -62,7 +95,10 @@ export default function EditTaskModal({ isOpen, onClose, task, onTaskUpdated }: 
         <div className="p-6">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="title"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Title
               </label>
               <input
@@ -77,7 +113,10 @@ export default function EditTaskModal({ isOpen, onClose, task, onTaskUpdated }: 
 
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700">
+                <label
+                  htmlFor="description"
+                  className="block text-sm font-medium text-gray-700"
+                >
                   Description
                 </label>
                 <div className="flex items-center gap-2">
@@ -86,13 +125,13 @@ export default function EditTaskModal({ isOpen, onClose, task, onTaskUpdated }: 
                     onClick={() => setIsPreview(!isPreview)}
                     className="text-sm text-indigo-600 hover:text-indigo-800"
                   >
-                    {isPreview ? 'Edit' : 'Preview'}
+                    {isPreview ? "Edit" : "Preview"}
                   </button>
                 </div>
               </div>
               {isPreview ? (
                 <div className="w-full px-3 py-2 min-h-[150px] whitespace-pre-wrap text-gray-700">
-                  {description || 'No description provided'}
+                  {description || "No description provided"}
                 </div>
               ) : (
                 <textarea
@@ -106,7 +145,10 @@ export default function EditTaskModal({ isOpen, onClose, task, onTaskUpdated }: 
             </div>
 
             <div>
-              <label htmlFor="status" className="block text-sm font-medium text-gray-700 mb-1">
+              <label
+                htmlFor="status"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
                 Status
               </label>
               <select
@@ -141,4 +183,4 @@ export default function EditTaskModal({ isOpen, onClose, task, onTaskUpdated }: 
       </div>
     </div>
   );
-} 
+}
