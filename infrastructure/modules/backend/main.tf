@@ -80,7 +80,7 @@ resource "aws_lambda_function" "express_app" {
     variables = {
       NODE_ENV       = "production"
       DYNAMODB_TABLE = "${var.app_name}-tasks-${var.stage}"  
-      LOG_LEVEL      = "info"                    
+      LOG_LEVEL      = "debug"
       CORS_ORIGIN    = var.cors_origin           
     }
   }
