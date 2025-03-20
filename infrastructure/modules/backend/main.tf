@@ -26,14 +26,16 @@ resource "aws_iam_role_policy" "dynamodb_access" {
       Effect = "Allow"
       Action = [
         "dynamodb:PutItem",
-        "dynamodb:GetItem"
+        "dynamodb:GetItem",
+        "dynamodb:DeleteItem",
+        "dynamodb:Scan",
+        "dynamodb:Query"
       ]
       Resource = var.dynamodb_table_arn
     }]
   })
 }
 
-# Allow Lambda to access S3 bucket
 resource "aws_iam_role_policy" "s3_access" {
   name   = "${var.app_name}-s3-access"
   role   = aws_iam_role.lambda_exec.id
@@ -57,6 +59,16 @@ resource "aws_lambda_function" "express_app" {
   handler       = "lambda.handler"
   runtime       = "nodejs18.x"
   timeout       = 15
+
+  environment {
+    variables = {
+      NODE_ENV       = "production"              # Required for production mode
+      DYNAMODB_TABLE = "${var.app_name}-tasks-${var.stage}"  # e.g., task-management-tasks-prod
+      AWS_REGION     = var.aws_region            # e.g., ap-southeast-2
+      LOG_LEVEL      = "info"                    # Adjust as needed
+      CORS_ORIGIN    = var.cors_origin           # e.g., CloudFront URL, set dynamically
+    }
+  }
 }
 
 resource "aws_api_gateway_rest_api" "api" {
@@ -85,7 +97,7 @@ resource "aws_api_gateway_integration" "lambda" {
 }
 
 resource "aws_api_gateway_deployment" "deployment" {
-  depends_on = [aws_api_gateway_integration.lambda]
+  depends_on  = [aws_api_gateway_integration.lambda]
   rest_api_id = aws_api_gateway_rest_api.api.id
 }
 

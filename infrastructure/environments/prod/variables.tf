@@ -22,3 +22,9 @@ variable "write_capacity" {
   description = "DynamoDB write capacity"
   type        = number
 }
+
+variable "aws_region" {
+  description = "AWS region"
+  type        = string
+  default     = "ap-southeast-2"
+}

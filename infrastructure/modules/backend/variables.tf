@@ -27,3 +27,14 @@ variable "dynamodb_table_arn" {
   description = "ARN of the DynamoDB table"
   type        = string
 }
+
+variable "aws_region" {
+  description = "AWS region"
+  type        = string
+  default     = "ap-southeast-2"
+}
+
+variable "cors_origin" {
+  description = "CORS origin for the backend API"
+  type        = string
+}

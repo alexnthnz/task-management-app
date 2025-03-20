@@ -58,27 +58,27 @@ jobs:
           aws s3 cp ./backend/lambda-deployment.zip s3://${{ env.APP_NAME }}-backend-artifacts-${{ env.STAGE }}/lambda-deployment.zip
 
       # Terraform: Backend Deployment
-    #   - name: Setup Terraform
-    #     uses: hashicorp/setup-terraform@v3
-    #     with:
-    #       terraform_version: 1.5.0
-    #
-    #   - name: Terraform Init (Backend)
-    #     working-directory: ./environments/prod
-    #     run: terraform init
-    #
-    #   - name: Terraform Plan (Backend)
-    #     working-directory: ./environments/prod
-    #     run: terraform plan -out=tfplan-backend -target=module.dynamodb -target=module.backend_artifacts -target=module.backend
-    #     if: github.event_name == 'pull_request'
-    #
-    #   - name: Terraform Apply (Backend)
-    #     working-directory: ./environments/prod
-    #     run: terraform apply -auto-approve -target=module.dynamodb -target=module.backend_artifacts -target=module.backend
-    #     if: github.event_name == 'push'
-    #
-    # outputs:
-    #   api_url: ${{ steps.terraform.outputs.api_url }} # Note: Requires adjustment, see below
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.5.0
+
+      - name: Terraform Init (Backend)
+        working-directory: ./environments/prod
+        run: terraform init
+
+      - name: Terraform Plan (Backend)
+        working-directory: ./environments/prod
+        run: terraform plan -out=tfplan-backend -target=module.dynamodb -target=module.backend_artifacts -target=module.backend
+        if: github.event_name == 'pull_request'
+
+      - name: Terraform Apply (Backend)
+        working-directory: ./environments/prod
+        run: terraform apply -auto-approve -target=module.dynamodb -target=module.backend_artifacts -target=module.backend
+        if: github.event_name == 'push'
+
+    outputs:
+      api_url: ${{ steps.terraform.outputs.api_url }} # Note: Requires adjustment, see below
 
   frontend:
     runs-on: ubuntu-latest
